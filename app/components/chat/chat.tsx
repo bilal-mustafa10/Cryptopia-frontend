@@ -92,7 +92,7 @@ export function Chat() {
           <div key={msg.id} className="flex items-start gap-3">
             <Avatar className="h-8 w-8 shrink-0">
               <AvatarImage
-                src={msg.role === "user" ? "/avatar.svg" : "/user-avatar.svg"}
+                src={msg.role === "user" ? "/avatar.svg" : "/avatar.svg"}
                 alt={msg.role === "user" ? "User Avatar" : "CrypGod Avatar"}
               />
               <AvatarFallback>{msg.role === "user" ? "Y" : "C"}</AvatarFallback>
@@ -110,7 +110,7 @@ export function Chat() {
         {streamingContent && (
           <div className="flex items-start gap-3">
             <Avatar className="h-8 w-8 shrink-0">
-              <AvatarImage src="/user-avatar.svg" />
+              <AvatarImage src="/avatar.svg" />
               <AvatarFallback>C</AvatarFallback>
             </Avatar>
             <div className="grid gap-1">
@@ -127,7 +127,7 @@ export function Chat() {
         {isLoading && (
           <div className="flex items-start gap-3">
             <Avatar className="h-8 w-8 shrink-0">
-              <AvatarImage src="/user-avatar.svg" />
+              <AvatarImage src="/avatar.svg" />
               <AvatarFallback>C</AvatarFallback>
             </Avatar>
             <div className="grid gap-1">

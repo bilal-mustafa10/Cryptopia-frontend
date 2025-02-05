@@ -1,3 +1,5 @@
+import { motion } from "framer-motion";
+
 import { FloatingDockDemo } from "@/app/components/ui/FloatingDockDemo";
 import { Chat } from "@/app/components/chat/chat";
 import { Crypto } from "@/app/components/charts/crypto";
@@ -7,7 +9,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen dark:bg-black bg-white dark:bg-grid-small-white/[0.2] bg-grid-small-black/[0.2]">
       <img src="./cryptopia-logo.png" className="w-[200px] ml-4"/>
-      <img src="./connected-to-base-sepolia-image.png" className="w-[200px] right-10  top-2 absolute"/>
+      <img src="./connected-to-base-sepolia-image.png" className="w-[200px] right-10  top-0 absolute border-b border-darkMagenta "/>
       <div className="flex p-4 flex-col">
         <div className={`grid grid-cols-10 gap-2`}>
           <div
