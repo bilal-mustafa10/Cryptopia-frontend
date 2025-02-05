@@ -81,7 +81,7 @@ export function Chat() {
 
   return (
     <div
-      className={`flex flex-col bg-white border rounded-3xl h-[calc(90vh-40px)] dark:bg-neutral-900 dark:border-neutral-700`}
+      className={`flex flex-col bg-white border rounded-3xl h-[calc(78vh-40px)] dark:bg-neutral-900 dark:border-neutral-700 `}
     >
       <div className="border-b p-4 flex items-center justify-between border-neutral-700">
         <h1 className="text-xl font-semibold">CrypGod</h1>
