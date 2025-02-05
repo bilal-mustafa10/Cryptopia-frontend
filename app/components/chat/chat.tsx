@@ -1,19 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CornerRightUp, Plus, Send } from "lucide-react";
+import { CornerRightUp } from "lucide-react";
 import { useState, useRef, useEffect, SetStateAction } from "react";
-import { streamText } from "@/utils/stream-text";
+import { streamText, StreamResponse } from "@/utils/stream-text";
 import { useChatStore } from "@/hooks/use-chat-store";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-
-const API_URL = "/api/chat"; // Replace with your actual API endpoint
+import { AIThinking } from "./AIThinking";
 
 export function Chat() {
   const [message, setMessage] = useState("");
-  const [streamingContent, setStreamingContent] = useState("");
+  const [streamingContent, setStreamingContent] = useState<StreamResponse | null>(null);
   const { messages, addMessage, isLoading, setIsLoading } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -23,17 +22,7 @@ export function Chat() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]); // Removed unnecessary dependencies: streamingContent
-
-  const simulateAPICall = async (userMessage: string): Promise<string> => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    const responses = [
-      "Based on my analysis of the current market trends, I can see that Bitcoin is showing strong momentum. The technical indicators suggest a potential breakout above the resistance level at $45,000. However, it's important to note that market volatility remains high.",
-      "Looking at the cryptocurrency market, I notice several interesting patterns. Ethereum's recent upgrade has significantly improved its scalability, which could drive increased adoption. The DeFi sector also shows promising growth metrics.",
-      "From a trading perspective, I recommend maintaining a diversified portfolio. The current market conditions suggest that both large-cap cryptocurrencies and select alt-coins could perform well in the coming weeks.",
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
+  }, [messages, streamingContent]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,37 +41,106 @@ export function Chat() {
     addMessage(userMessage);
     setMessage("");
     setIsLoading(true);
+    let currentResponse = '';
 
     try {
-      const response = await simulateAPICall(message);
-      setIsLoading(false);
-      let fullContent = "";
+      // Set initial thinking state
+      setStreamingContent({
+        type: 'thinking',
+        content: 'Analyzing your request...',
+        step: 'start'
+      });
 
-      for await (const chunk of streamText(response)) {
-        fullContent += chunk;
-        setStreamingContent(fullContent);
+      for await (const chunk of streamText(message)) {
+        setStreamingContent(chunk);
+        if (chunk.type === 'message') {
+          currentResponse = chunk.content;
+        }
       }
 
-      setStreamingContent("");
-      addMessage({
-        id: (Date.now() + 1).toString(),
-        content: response,
-        role: "assistant",
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      });
+      if (currentResponse) {
+        addMessage({
+          id: (Date.now() + 1).toString(),
+          content: currentResponse,
+          role: "assistant",
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        });
+      }
     } catch (error) {
-      console.error("Error:", error);
-      setIsLoading(false);
+      console.error("Error in chat:", error);
+      setStreamingContent({
+        type: 'error',
+        content: 'Failed to get response from the agent.',
+      });
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+        setStreamingContent(null);
+      }, 500);
     }
   };
 
+  const renderStreamingContent = () => {
+    if (!streamingContent) return null;
+
+    return (
+      <div className="flex items-start gap-3">
+        <Avatar className="h-8 w-8 shrink-0">
+          <AvatarImage src="/user-avatar.svg" />
+          <AvatarFallback>C</AvatarFallback>
+        </Avatar>
+        <div className="grid gap-1 w-full">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-foreground">CrypGod</span>
+          </div>
+          
+          {streamingContent.type === 'thinking' && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 rounded-full bg-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-2 h-2 rounded-full bg-foreground animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-2 h-2 rounded-full bg-foreground animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
+              <span>{streamingContent.content}</span>
+            </div>
+          )}
+          
+          {streamingContent.type === 'tool_usage' && (
+            <div className="flex flex-col gap-1">
+              <p className="text-sm text-muted-foreground italic flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"/>
+                {streamingContent.content}
+              </p>
+              {streamingContent.details && (
+                <p className="text-xs text-muted-foreground/60 pl-4">
+                  {streamingContent.details}
+                </p>
+              )}
+            </div>
+          )}
+          
+          {streamingContent.type === 'message' && (
+            <div className="text-sm text-foreground">
+              {streamingContent.content}
+              <span className="inline-block w-1 h-4 ml-0.5 bg-foreground animate-pulse" />
+            </div>
+          )}
+          
+          {streamingContent.type === 'error' && (
+            <p className="text-sm text-red-500">
+              {streamingContent.content}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div
-      className={`flex flex-col bg-white border rounded-3xl h-[calc(90vh-40px)] dark:bg-neutral-900 dark:border-neutral-700`}
-    >
+    <div className="flex flex-col bg-white border rounded-3xl h-[calc(90vh-40px)] dark:bg-neutral-900 dark:border-neutral-700">
       <div className="border-b p-4 flex items-center justify-between border-neutral-700">
         <h1 className="text-xl font-semibold">CrypGod</h1>
       </div>
@@ -103,61 +161,15 @@ export function Chat() {
                   {msg.role === "user" ? "You" : "CrypGod"}
                 </span>
               </div>
-              <p className="text-sm text-foreground">{msg.content}</p>
+              <p className="text-sm text-foreground whitespace-pre-wrap">{msg.content}</p>
             </div>
           </div>
         ))}
-        {streamingContent && (
-          <div className="flex items-start gap-3">
-            <Avatar className="h-8 w-8 shrink-0">
-              <AvatarImage src="/user-avatar.svg" />
-              <AvatarFallback>C</AvatarFallback>
-            </Avatar>
-            <div className="grid gap-1">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">CrypGod</span>
-              </div>
-              <p className="text-sm text-foreground">
-                {streamingContent}
-                <span className="inline-block w-1 h-4 ml-0.5 bg-foreground animate-pulse" />
-              </p>
-            </div>
-          </div>
-        )}
-        {isLoading && (
-          <div className="flex items-start gap-3">
-            <Avatar className="h-8 w-8 shrink-0">
-              <AvatarImage src="/user-avatar.svg" />
-              <AvatarFallback>C</AvatarFallback>
-            </Avatar>
-            <div className="grid gap-1">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">CrypGod</span>
-              </div>
-              <div className="flex gap-1.5">
-                <span
-                  className="w-2 h-2 rounded-full bg-foreground animate-bounce"
-                  style={{ animationDelay: "0ms" }}
-                />
-                <span
-                  className="w-2 h-2 rounded-full bg-foreground animate-bounce"
-                  style={{ animationDelay: "150ms" }}
-                />
-                <span
-                  className="w-2 h-2 rounded-full bg-foreground animate-bounce"
-                  style={{ animationDelay: "300ms" }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        {streamingContent && renderStreamingContent()}
         <div ref={messagesEndRef} />
       </div>
 
-      <form
-        onSubmit={handleSendMessage}
-        className="p-4 border-t border-neutral-700"
-      >
+      <form onSubmit={handleSendMessage} className="p-4 border-t border-neutral-700">
         <div className="flex items-center gap-2">
           <Input
             value={message}
