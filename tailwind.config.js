@@ -38,6 +38,7 @@ module.exports = {
         "success-50": "#ECFDF3",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        neonGreen: "#00B173",
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",

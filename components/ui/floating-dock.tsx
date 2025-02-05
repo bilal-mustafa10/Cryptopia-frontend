@@ -121,7 +121,7 @@ function IconContainer({
         className={cn(
           "aspect-square rounded-full flex items-center justify-center relative",
           isActive
-            ? "bg-indigo-500 dark:bg-indigo-700" // Active link color
+            ? "bg-neonGreen dark:bg-neonGreen" 
             : "bg-gray-200 dark:bg-neutral-800",
         )}
       >
