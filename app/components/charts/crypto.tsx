@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { TimeRangeSelector } from "@/app/components/time-range-selector";
 import { CryptoChart } from "@/app/components/charts/crypto-chart";
 import { CryptoSelector } from "@/app/components/charts/crypto-selector";
@@ -20,14 +20,10 @@ const timeRangeMapping: Record<string, number> = {
 
 export function Crypto() {
   const { isLoading, fetchAllData, fetchLatestPrice } = useCryptoStore();
-  // We'll select the data below via a separate hook call
-  // so that the store doesn't re-render everything unnecessarily.
-
   const [selectedCrypto, setSelectedCrypto] =
     useState<keyof Omit<CryptoData, "timestamp">>("bitcoin");
   const [timeRange, setTimeRange] = useState("1D");
 
-  // On first mount, fetch everything once
   useEffect(() => {
     fetchAllData();
   }, [fetchAllData]);
@@ -37,20 +33,16 @@ export function Crypto() {
     (state) => state.data[selectedCrypto]?.[mappedDays] as CryptoData[],
   );
 
-  // ### Real-time Updates ###
-  // Use setInterval to periodically fetch the *latest* price for the currently selected coin/timeframe
   useEffect(() => {
     const intervalId = setInterval(() => {
-      // This calls the store's method to fetch the newest data point
       fetchLatestPrice(selectedCrypto, mappedDays);
-    }, 60_000); // every 60 seconds
+    }, 60_000);
 
     return () => {
       clearInterval(intervalId);
     };
   }, [selectedCrypto, mappedDays, fetchLatestPrice]);
 
-  // Price change calculation
   const getPriceChange = () => {
     if (coinData.length < 2) return { value: 0, isPositive: true };
     const current = coinData[coinData.length - 1][selectedCrypto];
@@ -63,8 +55,8 @@ export function Crypto() {
   const priceChange = getPriceChange();
 
   return (
-    <Card className="overflow-hidden bg-white border rounded-3xl dark:bg-neutral-900 dark:border-neutral-700">
-      <CardContent className="p-6 space-y-6">
+    <GlassCard>
+      <div className="p-6 space-y-6 relative">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-1">
@@ -123,7 +115,7 @@ export function Crypto() {
             }
           />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </GlassCard>
   );
 }

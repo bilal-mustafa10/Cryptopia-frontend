@@ -1,12 +1,3 @@
-<p align="center">
-  <a href="https://go.clerk.com/e3UDpP4" target="_blank" rel="noopener noreferrer">
-   <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="./public/light-logo.png">
-      <img src="./public/dark-logo.png" height="64">
-    </picture>
-  </a>
-  <br />
-</p>
 <div align="center">
   <h1>
     Next.js Clerk auth starter template
@@ -22,7 +13,6 @@
   </a>
   <br />
   <br />
-  <img alt="Clerk Hero Image" src="public/og.png">
 </div>
 
 ## Introduction

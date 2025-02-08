@@ -1,6 +1,13 @@
-<svg class="css-4rx3j2" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-    <rect width="32" height="32" rx="16" fill="#32D262"></rect>
-    <path d="M11 23C9.89543 23 9 22.1046 9 21L9 11C9 9.89543 9.89543 9 11 9L21 9C22.1046 9 23 9.89543 23 11V21C23 22.1046 22.1046 23 21 23H11Z"
-          transform="rotate(45, 16, 16)" fill-rule="evenodd"
-          style="fill: var(--color-grayscale-000); mix-blend-mode: soft-light;"></path>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#clip0_24_18)">
+        <path d="M32 16C32 7.16344 24.8366 0 16 0C7.16344 0 0 7.16344 0 16C0 24.8366 7.16344 32 16 32C24.8366 32 32 24.8366 32 16Z" fill="#44AE6E"/>
+        <g style="mix-blend-mode:soft-light">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M9.00008 7.00004C7.89555 7 7.00014 7.89541 7.0001 9.00002L7.00013 15C7.0001 16.1046 7.89553 17 9.00011 17L13.0001 17C14.1047 17 15.0001 17.8954 15.0001 19V23C15.0001 24.1046 15.8955 25 17.0001 25L23.0001 25C24.1047 25 25.0001 24.1045 25.0001 23L25.0001 17C25.0001 15.8954 24.1047 15 23.0001 15L19.0002 15C17.8955 15 17.0001 14.1046 17.0002 13L17.0001 8.99997C17.0001 7.89544 16.1047 7 15.0001 6.99999L9.00008 7.00004Z" fill="black"/>
+        </g>
+    </g>
+    <defs>
+        <clipPath id="clip0_24_18">
+            <rect width="32" height="32" fill="white"/>
+        </clipPath>
+    </defs>
 </svg>

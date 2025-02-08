@@ -1,5 +1,5 @@
 export interface StreamResponse {
-  type: 'thinking' | 'tool_usage' | 'message' | 'error' | 'image';
+  type: "thinking" | "tool_usage" | "message" | "error" | "image";
   content: string;
   step?: string;
   tool_type?: string;
@@ -9,10 +9,10 @@ export interface StreamResponse {
 
 export async function* streamText(message: string) {
   try {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
+    const response = await fetch("/api/chat", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         message,
@@ -21,20 +21,20 @@ export async function* streamText(message: string) {
     });
 
     if (!response.body) {
-      throw new Error('No response body');
+      throw new Error("No response body");
     }
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    let buffer = '';
+    let buffer = "";
 
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
 
       for (const line of lines) {
         if (line.trim()) {
@@ -62,8 +62,8 @@ export async function* streamText(message: string) {
     }
   } catch (error) {
     yield {
-      type: 'error',
-      content: 'Error connecting to the agent. Please try again.',
+      type: "error",
+      content: "Error connecting to the agent. Please try again.",
     };
   }
 }

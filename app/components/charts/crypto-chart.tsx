@@ -109,16 +109,16 @@ export function CryptoChart({
             tick={{ fill: "hsl(var(--muted-foreground))" }}
             minTickGap={30}
           />
-            <YAxis
-                tickFormatter={(value) => `$${value.toLocaleString()}`}
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: "hsl(var(--muted-foreground))" }}
-                width={80}
-                domain={["dataMin", "dataMax"]}
-            />
-            <ChartTooltip
+          <YAxis
+            tickFormatter={(value) => `$${value.toLocaleString()}`}
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+            tick={{ fill: "hsl(var(--muted-foreground))" }}
+            width={80}
+            domain={["dataMin", "dataMax"]}
+          />
+          <ChartTooltip
             content={
               <ChartTooltipContent
                 formatter={(
