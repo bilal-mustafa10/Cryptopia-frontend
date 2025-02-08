@@ -1,9 +1,10 @@
 export interface StreamResponse {
-  type: 'thinking' | 'tool_usage' | 'message' | 'error';
+  type: 'thinking' | 'tool_usage' | 'message' | 'error' | 'image';
   content: string;
   step?: string;
   tool_type?: string;
   details?: string;
+  image_url?: string;
 }
 
 export async function* streamText(message: string) {
