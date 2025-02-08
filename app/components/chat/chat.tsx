@@ -133,7 +133,7 @@ export function Chat() {
     return (
       <div className="flex items-start gap-3">
         <Avatar className="h-8 w-8 shrink-0">
-          <AvatarImage src="/user-avatar.svg" />
+          <AvatarImage src="/avatar.svg" />
           <AvatarFallback>C</AvatarFallback>
         </Avatar>
         <div className="grid gap-1 w-full">

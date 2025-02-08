@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://clerk-next-app.vercel.app/"),
   title: "Cryptopia",
   description:
-    "AI-powered crypto wallet that educates, minimizes risk, and empowers strategic DeFi moves"
+    "AI-powered crypto wallet that educates, minimizes risk, and empowers strategic DeFi moves",
 };
 
 const geistSans = localFont({
