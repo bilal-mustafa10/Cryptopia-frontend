@@ -1,54 +1,34 @@
 "use client";
 import { cn } from "@/lib/utils";
-import Image from 'next/image';
+import Image from "next/image";
 
 const cryptos = [
   {
     value: "bitcoin",
     label: "Bitcoin",
     symbol: "BTC",
-    icon: <Image
-        src='/crypto/btc.svg'
-        alt='Bitcoin'
-        width={16}
-        height={16}
-    />,
+    icon: <Image src="/crypto/btc.svg" alt="Bitcoin" width={16} height={16} />,
     color: "text-[#F7931A]",
   },
   {
     value: "ethereum",
     label: "Ethereum",
     symbol: "ETH",
-    icon:<Image
-        src='/crypto/eth.svg'
-        alt='Ethereum'
-        width={16}
-        height={16}
-    />,
+    icon: <Image src="/crypto/eth.svg" alt="Ethereum" width={16} height={16} />,
     color: "text-[#627EEA]",
   },
   {
     value: "solana",
     label: "Solana",
     symbol: "SOL",
-    icon: <Image
-        src='/crypto/sol.svg'
-        alt='Solana'
-        width={16}
-        height={16}
-    />,
+    icon: <Image src="/crypto/sol.svg" alt="Solana" width={16} height={16} />,
     color: "text-[#00FFA3]",
   },
   {
     value: "cardano",
     label: "Cardano",
     symbol: "ADA",
-    icon: <Image
-        src='/crypto/ada.svg'
-        alt='Cardano'
-        width={16}
-        height={16}
-    />,
+    icon: <Image src="/crypto/ada.svg" alt="Cardano" width={16} height={16} />,
     color: "text-[#0033AD]",
   },
 ];

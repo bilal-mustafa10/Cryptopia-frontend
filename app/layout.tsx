@@ -6,9 +6,9 @@ import localFont from "next/font/local";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://clerk-next-app.vercel.app/"),
-  title: "Next.js Clerk Template",
+  title: "Cryptopia",
   description:
-    "A simple and powerful Next.js template featuring authentication and user management powered by Clerk.",
+    "AI-powered crypto wallet that educates, minimizes risk, and empowers strategic DeFi moves"
 };
 
 const geistSans = localFont({

@@ -4,9 +4,9 @@ import { FloatingDock } from "@/components/ui/floating-dock";
 import { ChartArea, ChartPie, MessageCircle, Rotate3d } from "lucide-react";
 
 export function FloatingDockDemo({
-                                   activeTabs,
-                                   setActiveTabs,
-                                 }: {
+  activeTabs,
+  setActiveTabs,
+}: {
   activeTabs: string[];
   setActiveTabs: (activeTabs: string[]) => void;
 }) {
@@ -30,12 +30,12 @@ export function FloatingDockDemo({
   ];
 
   return (
-      <div className="flex items-center justify-center h-[10rem] w-full">
-        <FloatingDock
-            items={links}
-            activeTabs={activeTabs}
-            setActiveTabs={setActiveTabs}
-        />
-      </div>
+    <div className="flex items-center justify-center h-[10rem] w-full">
+      <FloatingDock
+        items={links}
+        activeTabs={activeTabs}
+        setActiveTabs={setActiveTabs}
+      />
+    </div>
   );
 }
