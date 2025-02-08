@@ -65,7 +65,7 @@ export function Crypto() {
 
   return (
     <GlassCard>
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-4">
         <span className="text-sm text-zinc-400 font-medium">Charts</span>
         <CryptoSelector
           value={selectedCrypto}
