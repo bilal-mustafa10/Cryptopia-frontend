@@ -80,7 +80,7 @@ const transactionStyles = {
 
 export default function CryptoTransactions() {
   return (
-    <GlassCard className="max-w-md">
+    <GlassCard>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-zinc-100">Transactions</CardTitle>
       </CardHeader>

@@ -1,72 +1,41 @@
+// FloatingDockDemo.tsx
 import React from "react";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import {
-  IconExchange,
-  IconHome,
-  IconChartDots,
-  IconChartPie,
-  IconRouteSquare,
-  IconTransactionBitcoin,
-  IconFileAnalytics,
-} from "@tabler/icons-react";
+import { ChartArea, ChartPie, MessageCircle, Rotate3d } from "lucide-react";
 
-export function FloatingDockDemo() {
+export function FloatingDockDemo({
+                                   activeTabs,
+                                   setActiveTabs,
+                                 }: {
+  activeTabs: string[];
+  setActiveTabs: (activeTabs: string[]) => void;
+}) {
   const links = [
     {
-      title: "Home",
-      icon: (
-        <IconHome className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-      ),
-      href: "/dashboard",
-    },
-
-    {
       title: "Portfolio",
-      icon: (
-        <IconChartPie className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-      ),
-      href: "/portfolio",
+      icon: <ChartPie className="h-full w-full" />,
     },
     {
       title: "Charts",
-      icon: (
-        <IconChartDots className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-      ),
-      href: "/charts",
+      icon: <ChartArea className="h-full w-full" />,
     },
     {
-      title: "Guides",
-      icon: (
-        <IconRouteSquare className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-      ),
-      href: "/guides",
+      title: "Transactions",
+      icon: <Rotate3d className="h-full w-full" />,
     },
     {
-      title: "Exchange",
-      icon: (
-        <IconExchange className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-      ),
-      href: "/exchange",
-    },
-
-    {
-      title: "Interactions",
-      icon: (
-        <IconTransactionBitcoin className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-      ),
-      href: "/interactions",
-    },
-    {
-      title: "Reports",
-      icon: (
-        <IconFileAnalytics className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-      ),
-      href: "/reports",
+      title: "Chat",
+      icon: <MessageCircle className="h-full w-full" />,
     },
   ];
+
   return (
-    <div className="flex items-center justify-center h-[10rem] w-full">
-      <FloatingDock items={links} />
-    </div>
+      <div className="flex items-center justify-center h-[10rem] w-full">
+        <FloatingDock
+            items={links}
+            activeTabs={activeTabs}
+            setActiveTabs={setActiveTabs}
+        />
+      </div>
   );
 }

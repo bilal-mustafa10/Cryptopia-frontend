@@ -12,7 +12,7 @@ export default function CryptoWallet() {
   return (
     <GlassCard>
       {/* Balance Section */}
-      <div className="space-y-2 backdrop-blur-sm bg-white/[0.02] p-4 border border-white/[0.05]">
+      <div className="space-y-2 p-6 border border-white/[0.05]">
         <span className="text-sm text-zinc-400 font-medium">Main Wallet</span>
         <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-zinc-200 bg-clip-text text-transparent">
           $23,547.00
@@ -20,7 +20,7 @@ export default function CryptoWallet() {
       </div>
 
       {/* Portfolio Distribution */}
-      <div className="space-y-4 backdrop-blur-sm bg-white/[0.02] p-4 border border-white/[0.05]">
+      <div className="space-y-4 backdrop-blur-sm bg-white/[0.02] p-6 border border-white/[0.05]">
         <div className="relative h-2 w-full flex overflow-hidden rounded-full">
           {portfolio.map((asset, index) => (
             <div
