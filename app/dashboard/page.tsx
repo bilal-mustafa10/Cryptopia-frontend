@@ -45,6 +45,7 @@ export default function DashboardPage() {
               activeTabs.includes("Charts") ||
               activeTabs.includes("Transactions")) && (
               <div className="sm:col-span-10 md:col-span-6 flex flex-col gap-2">
+                {/*<CryptoWidget name={'Bitcoin'} symbol={"BTC"} iconPath={"/crypto/btc.svg"} iconColor={"text-yellow-500"} change24h={-0.5} price={40000} />*/}
                 {activeTabs.includes("Charts") && <Crypto />}
                 {activeTabs.includes("Portfolio") && <CryptoWallet />}
                 {activeTabs.includes("Transactions") && <CryptoTransactions />}

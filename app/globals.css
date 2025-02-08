@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  font-family: "Glory", sans-serif;
+}
+
 .background {
   overflow: hidden;
   background: #f8f8f8;

@@ -195,9 +195,6 @@ export function Chat() {
           <span className="font-semibold text-foreground">
             {message.role === "user" ? "You" : "CrypGod"}
           </span>
-          <span className="text-xs text-muted-foreground">
-            {message.timestamp}
-          </span>
         </div>
         <div
           className={cn(
@@ -227,7 +224,7 @@ export function Chat() {
     <GlassCard>
       <div className="flex flex-col h-[calc(95vh)] relative">
         {/* Header */}
-        <div className="border-b p-4 flex items-center justify-between border-white/5">
+        <div className="p-4 flex items-center justify-between border-white/5">
           <h1 className="text-xl font-semibold">CrypGod</h1>
         </div>
 

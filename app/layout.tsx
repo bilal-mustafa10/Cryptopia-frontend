@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import Script from "next/script";
 import { Metadata } from "next";
+import { Glory } from "next/font/google";
 import localFont from "next/font/local";
 
 export const metadata: Metadata = {
@@ -19,6 +20,12 @@ const geistSans = localFont({
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
+});
+
+const glory = Glory({
+  subsets: ["latin"], // Ensures it supports Latin characters
+  weight: ["400", "600", "700"], // Choose the weights you need
+  variable: "--font-glory", // Define a CSS variable for Tailwind
 });
 
 export default function RootLayout({

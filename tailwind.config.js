@@ -78,7 +78,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)"],
+        sans: ["var(--font-glory)", "sans-serif"],
         mono: ["var(--font-geist-mono)"],
       },
       borderRadius: {
