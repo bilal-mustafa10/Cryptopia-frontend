@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useCryptoStore } from "@/hooks/use-crypto-store";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const portfolio = [
   {
@@ -74,12 +75,33 @@ export default function CryptoWallet() {
   const totalProfitLossPct =
     totalPortfolioCost > 0 ? (totalProfitLoss / totalPortfolioCost) * 100 : 0;
 
+  const handleOnrampClick = () => {
+    const appId = "58a3fa2e-617f-4198-81e7-096f5e498c00";
+    const destinationWallets = encodeURIComponent(
+      JSON.stringify([
+        {
+          address: "0x4315d134aCd3221a02dD380ADE3aF39Ce219037c",
+          blockchains: ["base"],
+        },
+      ]),
+    );
+    const defaultAsset = "ETH";
+    const defaultPaymentMethod = "CARD";
+    const fiatCurrency = "USD";
+    const presetFiatAmount = 10;
+    const quoteId = "your-quote-id-here";
+
+    const onrampUrl = `https://pay.coinbase.com/buy/select-asset?appId=${appId}&destinationWallets=${destinationWallets}&defaultAsset=${defaultAsset}&defaultPaymentMethod=${defaultPaymentMethod}&fiatCurrency=${fiatCurrency}&presetFiatAmount=${presetFiatAmount}&quoteId=${quoteId}`;
+
+    window.open(onrampUrl, "_blank");
+  };
+
   return (
     <GlassCard>
       <div className="flex items-center justify-between p-6 border border-white/[0.05]">
+        {/* Left side with wallet info */}
         <div className="space-y-2">
           <span className="text-sm text-zinc-400 font-medium">Main Wallet</span>
-          {/* Flex container for portfolio value and P/L */}
           <div className="flex items-center">
             <h1 className="text-2xl 2xl:text-4xl font-bold bg-gradient-to-r from-white to-zinc-200 bg-clip-text text-transparent">
               {totalPortfolioValue.toLocaleString(undefined, {
@@ -104,11 +126,29 @@ export default function CryptoWallet() {
             </div>
           </div>
         </div>
-        <div className="inline-flex h-8 text-xs animate-shimmer items-center justify-center rounded-full border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 font-medium text-slate-400 transition-colors">
-          Connected to: Base-Sepolia
+
+        <div className="flex items-center gap-2">
+          <div
+            className={cn(
+              "flex items-center justify-center h-8 px-4 text-xs font-medium rounded-full",
+              "border border-slate-800",
+              "bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)]",
+              "bg-[length:200%_100%] text-slate-400 animate-shimmer",
+            )}
+          >
+            Connected to: Base-Sepolia
+          </div>
+
+          <Button
+            onClick={handleOnrampClick}
+            className="text-xs font-medium rounded-full bg-indigo-600 text-white h-8 px-4 hover:bg-[#0045D8]"
+          >
+            Add Funds
+          </Button>
         </div>
       </div>
 
+      {/* ... rest of your component remains unchanged ... */}
       <div className="space-y-4 backdrop-blur-sm bg-white/[0.02] p-6 border border-white/[0.05]">
         <div className="relative h-2 w-full flex overflow-hidden rounded-full">
           {items.map((asset) => {
@@ -133,7 +173,6 @@ export default function CryptoWallet() {
                         "rounded-full backdrop-blur-xl",
                       )}
                       style={{
-                        // each stripe's width is a fraction of this segment
                         width: `calc(${100 / Math.floor(distribution / 3)}% - 2px)`,
                         marginRight: "2px",
                         opacity: 0.8,
