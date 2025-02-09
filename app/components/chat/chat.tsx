@@ -1,62 +1,38 @@
+// src/app/components/Chat.tsx
 "use client";
 
+import { useState, useRef, useLayoutEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { CornerRightUp } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
-import { streamText, StreamResponse } from "@/utils/stream-text";
-import { useChatStore } from "@/hooks/use-chat-store";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
-import { AIThinking } from "./AIThinking";
+import { CornerRightUp } from "lucide-react";
+import { useChatStore } from "@/hooks/use-chat-store";
+import { MarkdownRenderer } from "@/app/components/MarkdownRenderer";
 import { GlassCard } from "@/components/ui/GlassCard";
-
-// MarkdownRenderer with GitHub Flavored Markdown support
-const MarkdownRenderer = ({ children }: { children: string }) => {
-  return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      rehypePlugins={[rehypeRaw]}
-      components={{
-        img: ({ node, ...props }) => (
-          <div className="relative inline-block">
-            <img
-              {...props}
-              alt={props.alt}
-              className="rounded-lg shadow-lg w-[400px] object-contain my-2"
-            />
-          </div>
-        ),
-      }}
-      className="prose prose-zinc dark:prose-invert max-w-none"
-    >
-      {children}
-    </ReactMarkdown>
-  );
-};
+import { cn } from "@/lib/utils";
+import { sendChatMessage } from "@/services/chat-service";
+import { streamText } from "@/utils/stream-text";
 
 export function Chat() {
   const [message, setMessage] = useState("");
-  const [streamingContent, setStreamingContent] =
-    useState<StreamResponse | null>(null);
+  const [streamingContent, setStreamingContent] = useState("");
   const { messages, addMessage, isLoading, setIsLoading } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const scrollToBottom = () => {
+  // Scroll to the bottom after messages or streaming content update
+  useLayoutEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
   }, [messages, streamingContent]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() || isLoading) return;
 
+    // Remove focus from the input
+    inputRef.current?.blur();
+
+    // Add the user message
     const userMessage = {
       id: Date.now().toString(),
       content: message,
@@ -66,151 +42,69 @@ export function Chat() {
         minute: "2-digit",
       }),
     };
-
     addMessage(userMessage);
     setMessage("");
     setIsLoading(true);
-    let currentResponse: string | { content: string; image_url: string } = "";
 
     try {
-      // Set initial thinking state
-      setStreamingContent({
-        type: "thinking",
-        content: "Analyzing your request...",
-        step: "start",
-      } as StreamResponse);
+      // Call the API and extract the assistant's response (expects { response: string })
+      const responseData = await sendChatMessage(message);
+      setIsLoading(false);
+      let fullContent = "";
 
-      // Process streaming chunks from the API
-      for await (const chunk of streamText(message)) {
-        setStreamingContent(chunk as StreamResponse);
-        if (chunk.type === "message" || chunk.type === "image") {
-          currentResponse = chunk.content;
-          // If it's an image response, include the image_url
-          if (chunk.type === "image" && "image_url" in chunk) {
-            currentResponse = {
-              content: chunk.content,
-              image_url: chunk.image_url ? chunk.image_url : "",
-            };
-          }
-        }
+      // Stream the response word by word
+      for await (const chunk of streamText(responseData.response)) {
+        fullContent += chunk;
+        setStreamingContent(fullContent);
       }
 
-      if (currentResponse) {
-        addMessage({
-          id: (Date.now() + 1).toString(),
-          content:
-            typeof currentResponse === "string"
-              ? currentResponse
-              : currentResponse.content,
-          image_url:
-            typeof currentResponse === "string"
-              ? undefined
-              : currentResponse.image_url,
-          role: "assistant",
-          timestamp: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        });
-      }
+      // Clear the streaming text and add the final assistant message
+      setStreamingContent("");
+      addMessage({
+        id: (Date.now() + 1).toString(),
+        content: responseData.response,
+        role: "assistant",
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      });
     } catch (error) {
-      console.error("Error in chat:", error);
-      setStreamingContent({
-        type: "error",
-        content: "Failed to get response from the agent.",
-      } as StreamResponse);
-    } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-        setStreamingContent(null);
-      }, 500);
+      console.error("Error sending message:", error);
+      setIsLoading(false);
     }
   };
 
-  const renderStreamingContent = () => {
-    if (!streamingContent) return null;
-
-    return (
-      <div className="flex items-start gap-3">
-        <Avatar className="h-8 w-8 shrink-0">
-          <AvatarImage src="/avatar.svg" />
-          <AvatarFallback>C</AvatarFallback>
-        </Avatar>
-        <div className="grid gap-1 w-full">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-foreground">CrypGod</span>
-          </div>
-
-          {streamingContent.type === "thinking" && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <AIThinking />
-              <span>{streamingContent.content}</span>
-            </div>
-          )}
-
-          {streamingContent.type === "tool_usage" && (
-            <div className="text-muted-foreground">
-              <p>{streamingContent.content}</p>
-              {streamingContent.details && (
-                <p className="text-sm opacity-80">{streamingContent.details}</p>
-              )}
-            </div>
-          )}
-
-          {streamingContent.type === "message" && (
-            <MarkdownRenderer>{streamingContent.content}</MarkdownRenderer>
-          )}
-
-          {streamingContent.type === "image" && (
-            <div className="grid gap-2">
-              <MarkdownRenderer>{streamingContent.content}</MarkdownRenderer>
-              {streamingContent.image_url && (
-                <img
-                  src={streamingContent.image_url}
-                  alt="Generated by DALLE-3"
-                  className="rounded-lg shadow-lg w-[400px] object-contain"
-                />
-              )}
-            </div>
-          )}
-
-          {streamingContent.type === "error" && (
-            <div className="text-destructive">{streamingContent.content}</div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const renderMessage = (message: any) => (
-    <div key={message.id} className="flex items-start gap-3">
+  const renderMessage = (msg: any) => (
+    <div key={msg.id} className="flex items-start gap-3">
       <Avatar className="h-8 w-8 shrink-0">
         <AvatarImage
-          src={message.role === "user" ? "/user-avatar.svg" : "/avatar.svg"}
+          src={msg.role === "user" ? "/user-avatar.svg" : "/avatar.svg"}
         />
-        <AvatarFallback>{message.role === "user" ? "U" : "C"}</AvatarFallback>
+        <AvatarFallback>{msg.role === "user" ? "U" : "C"}</AvatarFallback>
       </Avatar>
       <div className="grid gap-1">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-foreground">
-            {message.role === "user" ? "You" : "CrypGod"}
+            {msg.role === "user" ? "You" : "CrypGod"}
           </span>
+          <span className="text-xs text-muted-foreground">{msg.timestamp}</span>
         </div>
         <div
           className={cn(
             "text-foreground",
-            message.role === "assistant" &&
+            msg.role === "assistant" &&
               "prose prose-zinc dark:prose-invert max-w-none",
           )}
         >
-          {message.role === "assistant" ? (
-            <MarkdownRenderer>{message.content}</MarkdownRenderer>
+          {msg.role === "assistant" ? (
+            <MarkdownRenderer>{msg.content}</MarkdownRenderer>
           ) : (
-            message.content
+            msg.content
           )}
-          {message.image_url && (
+          {msg.image_url && (
             <img
-              src={message.image_url}
+              src={msg.image_url}
               alt="Generated by DALLE-3"
               className="mt-2 rounded-lg shadow-lg w-[400px] object-contain p-2"
             />
@@ -231,7 +125,54 @@ export function Chat() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {messages.map((msg) => renderMessage(msg))}
-          {streamingContent && renderStreamingContent()}
+
+          {/* Streaming assistant message */}
+          {streamingContent && (
+            <div className="flex items-start gap-3">
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarImage src="/avatar.svg" />
+                <AvatarFallback>C</AvatarFallback>
+              </Avatar>
+              <div className="grid gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-foreground">CrypGod</span>
+                </div>
+                <p className="text-sm text-foreground">
+                  {streamingContent}
+                  <span className="inline-block w-1 h-4 ml-0.5 bg-foreground animate-pulse" />
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className="flex items-start gap-3">
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarImage src="/avatar.svg" />
+                <AvatarFallback>C</AvatarFallback>
+              </Avatar>
+              <div className="grid gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-foreground">CrypGod</span>
+                </div>
+                <div className="flex gap-1.5">
+                  <span
+                    className="w-2 h-2 rounded-full bg-foreground animate-bounce"
+                    style={{ animationDelay: "0ms" }}
+                  />
+                  <span
+                    className="w-2 h-2 rounded-full bg-foreground animate-bounce"
+                    style={{ animationDelay: "150ms" }}
+                  />
+                  <span
+                    className="w-2 h-2 rounded-full bg-foreground animate-bounce"
+                    style={{ animationDelay: "300ms" }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
 
@@ -242,10 +183,9 @@ export function Chat() {
         >
           <div className="flex items-center gap-2">
             <Input
+              ref={inputRef}
               value={message}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setMessage(e.target.value)
-              }
+              onChange={(e) => setMessage(e.target.value)}
               placeholder="Type a message..."
             />
             <Button
