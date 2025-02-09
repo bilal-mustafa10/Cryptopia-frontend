@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useCryptoStore } from "@/hooks/use-crypto-store";
 import { cn } from "@/lib/utils";
@@ -40,7 +40,6 @@ const portfolio = [
 
 export default function CryptoWallet() {
   const cryptoData = useCryptoStore((state) => state.data);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   const items = useMemo(() => {
     return portfolio.map((asset) => {
@@ -65,15 +64,12 @@ export default function CryptoWallet() {
     });
   }, [cryptoData]);
 
-  const publicAddressHook = usePublicAddress();
+  const { publicAddress, loading, error, fetchPublicAddress } =
+    usePublicAddress();
 
   useEffect(() => {
-    (async () => {
-      const pbAddr = (await publicAddressHook.fetchPublicAddress())
-        ?.publicAddress;
-      setWalletAddress(pbAddr ?? null);
-    })();
-  }, []);
+    fetchPublicAddress();
+  }, [fetchPublicAddress]);
 
   const totalPortfolioValue = useMemo(() => {
     return items.reduce((acc, item) => acc + item.totalValue, 0);
@@ -111,18 +107,20 @@ export default function CryptoWallet() {
   return (
     <GlassCard>
       <div className="flex items-center justify-between p-6 border border-white/[0.05]">
-        {/* Left side with wallet info */}
         <div className="space-y-2">
-          {/* Updated wallet info header */}
           <div className="flex items-center">
             <span className="text-sm text-zinc-400 font-medium">
               Main Wallet
             </span>
-            {walletAddress && (
+            {loading ? (
+              <span className="ml-1 text-xs text-zinc-300">Loading...</span>
+            ) : publicAddress ? (
               <span className="ml-1 text-xs text-zinc-300">
-                ({walletAddress})
+                ({publicAddress})
               </span>
-            )}
+            ) : error ? (
+              <span className="ml-1 text-xs text-red-500">Error: {error}</span>
+            ) : null}
           </div>
           <div className="flex items-center">
             <h1 className="text-2xl 2xl:text-4xl font-bold bg-gradient-to-r from-white to-zinc-200 bg-clip-text text-transparent">

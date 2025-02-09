@@ -1,5 +1,5 @@
 export interface PublicAddressResponse {
-  publicAddress: string;
+  public_address: string;
 }
 
 export const publicAddressService = {

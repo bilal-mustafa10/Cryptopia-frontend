@@ -16,7 +16,7 @@ export function usePublicAddress() {
     try {
       const data: PublicAddressResponse =
         await publicAddressService.fetchPublicAddress();
-      setPublicAddress(data.publicAddress);
+      setPublicAddress(data.public_address);
       return data;
     } catch (error: any) {
       setError(error.message);
