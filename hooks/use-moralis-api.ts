@@ -58,7 +58,7 @@ const makeRequest = async (
     params?: Record<string, any>;
     method?: "GET" | "POST";
     jsonData?: Record<string, any>;
-  }
+  },
 ): Promise<any> => {
   const url = `${BASE_URL}/${endpoint}`;
   const method = options?.method || "GET";
@@ -87,7 +87,7 @@ export const useWalletData = () => {
   const fetchWalletHistory = async (
     address: string,
     chain: string = "eth",
-    order: string = "DESC"
+    order: string = "DESC",
   ) => {
     const chainParam = getChainHex(chain);
     const endpoint = `wallets/${address}/history`;
@@ -108,7 +108,7 @@ export const useWalletData = () => {
   const fetchNFTTransfers = async (
     address: string,
     chain: string = "eth",
-    format: string = "decimal"
+    format: string = "decimal",
   ) => {
     const chainParam = getChainHex(chain);
     const endpoint = `${address}/nft/transfers`;
@@ -120,7 +120,7 @@ export const useWalletData = () => {
   const fetchTokenTransfers = async (
     address: string,
     chain: string = "eth",
-    order: string = "DESC"
+    order: string = "DESC",
   ) => {
     const chainParam = getChainHex(chain);
     const endpoint = `${address}/erc20/transfers`;
@@ -129,7 +129,10 @@ export const useWalletData = () => {
   };
 
   // Fetch NFT trading history for a wallet.
-  const fetchWalletNFTTrades = async (address: string, chain: string = "eth") => {
+  const fetchWalletNFTTrades = async (
+    address: string,
+    chain: string = "eth",
+  ) => {
     const chainParam = getChainHex(chain);
     const endpoint = `wallets/${address}/nfts/trades`;
     const params = { chain: chainParam };
@@ -156,7 +159,7 @@ export const useWalletData = () => {
   const fetchTokenPrice = async (
     token_address: string,
     chain: string = "eth",
-    include_percent_change: boolean = true
+    include_percent_change: boolean = true,
   ) => {
     const chainParam = getChainHex(chain);
     const endpoint = `erc20/${token_address}/price`;
@@ -170,7 +173,7 @@ export const useWalletData = () => {
   // Fetch prices for multiple tokens in one request.
   const fetchBatchTokenPrices = async (
     tokens: Array<{ token_address: string }>,
-    chain: string = "eth"
+    chain: string = "eth",
   ) => {
     const chainParam = getChainHex(chain);
     const endpoint = "erc20/prices";
@@ -186,7 +189,7 @@ export const useWalletData = () => {
     timeframe: string = "1h",
     currency: string = "usd",
     from_date: string,
-    to_date: string
+    to_date: string,
   ) => {
     const chainParam = getChainHex(chain);
     const endpoint = `pairs/${pair_address}/ohlcv`;
@@ -204,12 +207,14 @@ export const useWalletData = () => {
   const fetchWalletNetWorth = async (
     address: string,
     exclude_spam: boolean = true,
-    exclude_unverified_contracts: boolean = true
+    exclude_unverified_contracts: boolean = true,
   ) => {
     const endpoint = `wallets/${address}/net-worth`;
     const params = {
       exclude_spam: String(exclude_spam).toLowerCase(),
-      exclude_unverified_contracts: String(exclude_unverified_contracts).toLowerCase(),
+      exclude_unverified_contracts: String(
+        exclude_unverified_contracts,
+      ).toLowerCase(),
     };
     return await makeRequest(endpoint, { params });
   };
