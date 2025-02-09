@@ -23,7 +23,7 @@ const makeRequest = async (
     params?: Record<string, any>;
     method?: "GET" | "POST";
     jsonData?: Record<string, any>;
-  }
+  },
 ): Promise<any> => {
   const url = `${BASE_URL}/${endpoint}`;
   const method = options?.method || "GET";
@@ -70,7 +70,7 @@ export const useCryptoCompareData = () => {
    */
   const fetchPrice = async (
     fromSymbol: string,
-    toSymbols: string[]
+    toSymbols: string[],
   ): Promise<any> => {
     const endpoint = "data/price";
     const params = {
@@ -103,7 +103,7 @@ export const useCryptoCompareData = () => {
    */
   const fetchTopMarketCap = async (
     limit: number = 10,
-    toSymbol: string = "USD"
+    toSymbol: string = "USD",
   ): Promise<any> => {
     const endpoint = "data/top/mktcapfull";
     const params = {
@@ -122,7 +122,7 @@ export const useCryptoCompareData = () => {
    */
   const fetchTopExchanges = async (
     fromSymbol: string,
-    toSymbol: string = "USD"
+    toSymbol: string = "USD",
   ): Promise<any> => {
     const endpoint = "data/top/exchanges";
     const params = {
@@ -141,7 +141,7 @@ export const useCryptoCompareData = () => {
    */
   const fetchTopVolume = async (
     limit: number = 10,
-    toSymbol: string = "USD"
+    toSymbol: string = "USD",
   ): Promise<any> => {
     const endpoint = "data/top/totalvolfull";
     const params = {
@@ -158,10 +158,7 @@ export const useCryptoCompareData = () => {
    * @param timestamp - Unix timestamp to search for news (optional, defaults to current time)
    * @returns News data.
    */
-  const fetchNews = async (
-    token: string,
-    timestamp?: number
-  ): Promise<any> => {
+  const fetchNews = async (token: string, timestamp?: number): Promise<any> => {
     const ts = timestamp || Math.floor(Date.now() / 1000);
     const endpoint = "data/v2/news/";
     const params = {
@@ -182,4 +179,3 @@ export const useCryptoCompareData = () => {
     fetchNews,
   };
 };
-

@@ -1,23 +1,34 @@
-// src/services/chatService.ts
-
 export interface ChatResponse {
   response: string;
-  // If in the future you need to support images or other fields, add them here.
 }
 
 export async function sendChatMessage(message: string): Promise<ChatResponse> {
-  const res = await fetch("/api/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    // Disable streaming by setting stream to false
-    body: JSON.stringify({ message, stream: false }),
-  });
+  // Maximum allowed timeout for setTimeout in many browsers (approx 24.8 days)
+  const maxTimeout = 2147483647;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), maxTimeout);
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch chat response.");
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      signal: controller.signal,
+      body: JSON.stringify({ message, stream: false }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch chat response.");
+    }
+
+    return await res.json();
+  } catch (error: any) {
+    if (error.name === "AbortError") {
+      throw new Error("Request timed out after maximum allowed time.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return await res.json();
 }
