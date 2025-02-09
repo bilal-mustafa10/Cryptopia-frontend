@@ -4,16 +4,24 @@ import { create } from "zustand";
 import axios from "axios";
 import type { CryptoData } from "@/types/crypto";
 
-const API_BASE_URL = "https://api.coingecko.com/api/v3/coins";
-
-// Matches the "days" values you need:
 const ALL_TIME_RANGES = [1, 7, 30, 365];
-
-// Matches all of the coins you need:
 const ALL_CRYPTOS = ["bitcoin", "ethereum", "solana", "cardano"] as const;
-
 type CryptoName = (typeof ALL_CRYPTOS)[number];
 type Days = (typeof ALL_TIME_RANGES)[number];
+
+const CRYPTOCOMPARE_API_BASE_URL = "https://min-api.cryptocompare.com/data";
+
+const CRYPTOCOMPARE_SYMBOLS: Record<CryptoName, string> = {
+  bitcoin: "BTC",
+  ethereum: "ETH",
+  solana: "SOL",
+  cardano: "ADA",
+};
+
+const CRYPTOCOMPARE_API_KEY = process.env.NEXT_PUBLIC_CRYPTOCOMPARE_API_KEY;
+const apiKeyQuery = CRYPTOCOMPARE_API_KEY
+  ? `&api_key=${CRYPTOCOMPARE_API_KEY}`
+  : "";
 
 interface CryptoStoreState {
   data: Record<CryptoName, Record<Days, CryptoData[]>>;
@@ -25,8 +33,7 @@ interface CryptoStoreState {
     newPoint: CryptoData,
   ) => void;
   /**
-   * NEW: A function to fetch only the latest data point
-   * for a given crypto and timeframe (days).
+   * Fetches only the latest data point for a given crypto and timeframe.
    */
   fetchLatestPrice: (crypto: CryptoName, days: Days) => Promise<void>;
 }
@@ -40,24 +47,27 @@ export const useCryptoStore = create<CryptoStoreState>((set, get) => ({
   },
   isLoading: false,
 
-  // 1) Fetch *all* data for all cryptos & time ranges once
   fetchAllData: async () => {
     set({ isLoading: true });
 
     try {
-      const requests = ALL_CRYPTOS.flatMap((coin) =>
-        ALL_TIME_RANGES.map((days) =>
-          axios
-            .get(
-              `${API_BASE_URL}/${coin}/market_chart?vs_currency=usd&days=${days}&x_cg_demo_api_key=CG-d2b5Ap4BeKBSanwBJwEskmES`,
-            )
-            .then((res) => ({
-              coin,
-              days,
-              prices: res.data.prices,
-            })),
-        ),
-      );
+      const requests = ALL_CRYPTOS.flatMap((coin) => {
+        const symbol = CRYPTOCOMPARE_SYMBOLS[coin];
+        return ALL_TIME_RANGES.map((days) => {
+          let endpoint = "";
+          if (days === 1) {
+            endpoint = `${CRYPTOCOMPARE_API_BASE_URL}/v2/histohour?fsym=${symbol}&tsym=USD&limit=24${apiKeyQuery}`;
+          } else {
+            endpoint = `${CRYPTOCOMPARE_API_BASE_URL}/v2/histoday?fsym=${symbol}&tsym=USD&limit=${days}${apiKeyQuery}`;
+          }
+
+          return axios.get(endpoint).then((res) => ({
+            coin,
+            days,
+            prices: res.data.Data.Data,
+          }));
+        });
+      });
 
       const results = await Promise.all(requests);
 
@@ -69,10 +79,12 @@ export const useCryptoStore = create<CryptoStoreState>((set, get) => ({
       };
 
       results.forEach(({ coin, days, prices }) => {
-        newData[coin][days] = prices.map((entry: [number, number]) => ({
-          timestamp: entry[0],
-          [coin]: entry[1],
-        }));
+        newData[coin][days] = prices.map(
+          (entry: { time: number; close: number }) => ({
+            timestamp: entry.time * 1000,
+            [coin]: entry.close,
+          }),
+        );
       });
 
       set({ data: newData, isLoading: false });
@@ -82,7 +94,6 @@ export const useCryptoStore = create<CryptoStoreState>((set, get) => ({
     }
   },
 
-  // 2) Append new data point to the store (used for real-time updates)
   addNewPricePoint: (crypto, days, newPoint) => {
     set((state) => ({
       data: {
@@ -95,26 +106,15 @@ export const useCryptoStore = create<CryptoStoreState>((set, get) => ({
     }));
   },
 
-  // 3) Fetch only the *latest* price, and add it to the existing data array
   fetchLatestPrice: async (crypto, days) => {
     try {
-      // Option A: a simpler approach is to fetch the entire set of historical data again
-      // but with "days" = 1 or your target. Then take the last element from the returned prices.
-      // We do this so we don't have to figure out a "range" based on timestamps.
-
+      const symbol = CRYPTOCOMPARE_SYMBOLS[crypto];
       const res = await axios.get(
-        `${API_BASE_URL}/${crypto}/market_chart?vs_currency=usd&days=${days}&x_cg_demo_api_key=${process.env.NEXT_PUBLIC_CG_DEMO_API_KEY}`,
+        `https://min-api.cryptocompare.com/data/price?fsym=${symbol}&tsyms=USD${apiKeyQuery}`,
       );
+      const priceValue = res.data.USD;
+      const timestamp = Date.now();
 
-      // get the last data point
-      const prices = res.data.prices; // => [[timestamp, price], [timestamp, price], ...]
-      if (!prices || !prices.length) return;
-
-      const lastPrice = prices[prices.length - 1]; // e.g. [1675359384000, 23985.123]
-      const timestamp = lastPrice[0];
-      const priceValue = lastPrice[1];
-
-      // Add it to Zustand
       get().addNewPricePoint(crypto, days, {
         timestamp,
         bitcoin: crypto === "bitcoin" ? priceValue : undefined,

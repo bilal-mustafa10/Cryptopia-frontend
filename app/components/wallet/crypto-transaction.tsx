@@ -47,15 +47,6 @@ const transactions: Transaction[] = [
     timestamp: "1 Jan 11:09",
     hash: "0xdef...abc",
   },
-  {
-    id: "4",
-    type: "swap",
-    amount: "+1.2",
-    token: "ETH",
-    address: "1inch Exchange",
-    timestamp: "30 Dec 19:31",
-    hash: "0x456...123",
-  },
 ];
 
 // Create a mapping for each transaction type to its icon and custom bg color.
