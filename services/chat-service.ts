@@ -1,7 +1,10 @@
 export interface ChatResponse {
   type: 'message' | 'tool' | 'error' | 'complete';
   content: string;
+  session_id?: string;
 }
+
+let currentSessionId: string | null = null;
 
 export async function sendChatMessage(
   message: string,
@@ -14,7 +17,11 @@ export async function sendChatMessage(
         "Content-Type": "application/json",
         "Accept": "text/event-stream",
       },
-      body: JSON.stringify({ message, stream: true }),
+      body: JSON.stringify({ 
+        message, 
+        stream: true,
+        session_id: currentSessionId 
+      }),
     });
 
     if (!response.ok) {
@@ -43,6 +50,9 @@ export async function sendChatMessage(
         
         try {
           const parsed = JSON.parse(line) as ChatResponse;
+          if (parsed.session_id) {
+            currentSessionId = parsed.session_id;
+          }
           if (parsed.type === 'message' || parsed.type === 'tool') {
             onUpdate(parsed.content);
           } else if (parsed.type === 'error') {
@@ -61,6 +71,9 @@ export async function sendChatMessage(
     if (buffer.trim()) {
       try {
         const parsed = JSON.parse(buffer) as ChatResponse;
+        if (parsed.session_id) {
+          currentSessionId = parsed.session_id;
+        }
         if (parsed.type === 'message' || parsed.type === 'tool') {
           onUpdate(parsed.content);
         }
@@ -72,4 +85,8 @@ export async function sendChatMessage(
     console.error("Chat service error:", error);
     throw error;
   }
+}
+
+export function clearSession() {
+  currentSessionId = null;
 }
