@@ -1,5 +1,5 @@
 export interface ChatResponse {
-  type: 'message' | 'tool' | 'error' | 'complete';
+  type: "message" | "tool" | "error" | "complete";
   content: string;
   session_id?: string;
 }
@@ -8,19 +8,19 @@ let currentSessionId: string | null = null;
 
 export async function sendChatMessage(
   message: string,
-  onUpdate: (update: string) => void
+  onUpdate: (update: string) => void,
 ): Promise<void> {
   try {
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "text/event-stream",
+        Accept: "text/event-stream",
       },
-      body: JSON.stringify({ 
-        message, 
+      body: JSON.stringify({
+        message,
         stream: true,
-        session_id: currentSessionId 
+        session_id: currentSessionId,
       }),
     });
 
@@ -34,35 +34,35 @@ export async function sendChatMessage(
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    let buffer = '';
+    let buffer = "";
 
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      
+      const lines = buffer.split("\n");
+
       // Process all complete lines
       for (let i = 0; i < lines.length - 1; i++) {
         const line = lines[i].trim();
         if (!line) continue;
-        
+
         try {
           const parsed = JSON.parse(line) as ChatResponse;
           if (parsed.session_id) {
             currentSessionId = parsed.session_id;
           }
-          if (parsed.type === 'message' || parsed.type === 'tool') {
+          if (parsed.type === "message" || parsed.type === "tool") {
             onUpdate(parsed.content);
-          } else if (parsed.type === 'error') {
+          } else if (parsed.type === "error") {
             throw new Error(parsed.content);
           }
         } catch (e) {
           console.error("Error parsing SSE:", e, "Line:", line);
         }
       }
-      
+
       // Keep the last incomplete line in the buffer
       buffer = lines[lines.length - 1];
     }
@@ -74,7 +74,7 @@ export async function sendChatMessage(
         if (parsed.session_id) {
           currentSessionId = parsed.session_id;
         }
-        if (parsed.type === 'message' || parsed.type === 'tool') {
+        if (parsed.type === "message" || parsed.type === "tool") {
           onUpdate(parsed.content);
         }
       } catch (e) {

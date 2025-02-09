@@ -7,7 +7,6 @@ import { Crypto } from "@/app/components/charts/crypto";
 import CryptoWallet from "@/app/components/wallet/crypto-wallet";
 import CryptoTransactions from "@/app/components/wallet/crypto-transaction";
 import { useState } from "react";
-import { CryptoWidget } from "@/app/components/cards/crypto-price";
 
 export default function DashboardPage() {
   const [activeTabs, setActiveTabs] = useState([
@@ -29,7 +28,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Floating Dock Positioned in the Middle */}
       <div className="fixed left-0 top-1/2 z-30 p-4 transform -translate-y-1/2">
         <FloatingDockDemo
           activeTabs={activeTabs}
@@ -37,15 +35,13 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Main Content – Pushed to the Right */}
-      <div className="flex p-4 ml-24 h-full">
+      <div className="flex p-4 ml-20 h-full">
         <div className="flex-1 h-full">
           <div className="grid grid-cols-10 gap-4 h-full">
             {(activeTabs.includes("Portfolio") ||
               activeTabs.includes("Charts") ||
               activeTabs.includes("Transactions")) && (
-              <div className="sm:col-span-10 md:col-span-6 flex flex-col gap-2">
-                {/*<CryptoWidget name={'Bitcoin'} symbol={"BTC"} iconPath={"/crypto/btc.svg"} iconColor={"text-yellow-500"} change24h={-0.5} price={40000} />*/}
+              <div className="sm:col-span-10 md:col-span-5 flex flex-col gap-2">
                 {activeTabs.includes("Charts") && <Crypto />}
                 {activeTabs.includes("Portfolio") && <CryptoWallet />}
                 {activeTabs.includes("Transactions") && <CryptoTransactions />}
@@ -53,7 +49,7 @@ export default function DashboardPage() {
             )}
 
             {activeTabs.includes("Chat") && (
-              <div className="sm:col-span-10 md:col-span-4">
+              <div className="sm:col-span-10 md:col-span-5">
                 <Chat />
               </div>
             )}

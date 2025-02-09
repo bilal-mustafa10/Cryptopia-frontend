@@ -66,7 +66,6 @@ export function Crypto() {
   return (
     <GlassCard>
       <div className="p-6 space-y-4">
-        <span className="text-sm text-zinc-400 font-medium">Charts</span>
         <CryptoSelector
           value={selectedCrypto}
           onValueChange={(value) =>
@@ -77,7 +76,7 @@ export function Crypto() {
         {/* Price Info and Time Range Selector */}
         <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-1">
-            <div className="text-3xl font-bold tabular-nums">
+            <div className="text-2xl 2xl:text-4xl font-bold tabular-nums">
               {isLoading ? (
                 <div className="h-9 w-32 animate-pulse rounded-md bg-muted" />
               ) : (

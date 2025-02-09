@@ -79,26 +79,29 @@ export default function CryptoWallet() {
       <div className="flex items-center justify-between p-6 border border-white/[0.05]">
         <div className="space-y-2">
           <span className="text-sm text-zinc-400 font-medium">Main Wallet</span>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-zinc-200 bg-clip-text text-transparent">
-            {totalPortfolioValue.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}{" "}
-            USD
-          </h1>
-          <div className="text-sm text-zinc-300">
-            P/L:{" "}
-            <span
-              className={
-                totalProfitLoss >= 0 ? "text-[#00FFA3]" : "text-red-500"
-              }
-            >
-              {totalProfitLoss.toLocaleString(undefined, {
+          {/* Flex container for portfolio value and P/L */}
+          <div className="flex items-center">
+            <h1 className="text-2xl 2xl:text-4xl font-bold bg-gradient-to-r from-white to-zinc-200 bg-clip-text text-transparent">
+              {totalPortfolioValue.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-              })}
-              {"  "}({totalProfitLossPct.toFixed(2)}%)
-            </span>
+              })}{" "}
+              USD
+            </h1>
+            <div className="ml-4 text-sm text-zinc-300">
+              P/L:{" "}
+              <span
+                className={
+                  totalProfitLoss >= 0 ? "text-[#00FFA3]" : "text-red-500"
+                }
+              >
+                {totalProfitLoss.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+                {"  "}({totalProfitLossPct.toFixed(2)}%)
+              </span>
+            </div>
           </div>
         </div>
         <div className="inline-flex h-8 text-xs animate-shimmer items-center justify-center rounded-full border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 font-medium text-slate-400 transition-colors">
@@ -164,7 +167,6 @@ export default function CryptoWallet() {
                 <span className="text-zinc-300">
                   {asset.displayName}{" "}
                   <span className="text-zinc-500">
-                    {/* Current total value of that asset */}
                     {asset.totalValue.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
@@ -179,49 +181,6 @@ export default function CryptoWallet() {
             );
           })}
         </div>
-
-        {/* Optional: A table-like breakdown for each asset */}
-        {/*<div className="border-t border-white/10 pt-4 mt-4 space-y-2 text-sm text-zinc-400">*/}
-        {/*  {items.map((asset) => (*/}
-        {/*    <div*/}
-        {/*      key={asset.symbol}*/}
-        {/*      className="flex items-center justify-between"*/}
-        {/*    >*/}
-        {/*      <div>*/}
-        {/*        <span className="font-medium text-zinc-200 mr-2">*/}
-        {/*          {asset.displayName}*/}
-        {/*        </span>*/}
-        {/*        <span className="text-xs text-zinc-500">*/}
-        {/*          {asset.quantity}*/}
-        {/*        </span>*/}
-        {/*      </div>*/}
-        {/*      <div className="text-right">*/}
-        {/*        <div>*/}
-        {/*          Current Price:{" "}*/}
-        {/*          {asset.currentPrice.toLocaleString(undefined, {*/}
-        {/*            minimumFractionDigits: 2,*/}
-        {/*            maximumFractionDigits: 2,*/}
-        {/*          })}*/}
-        {/*        </div>*/}
-        {/*        <div>Cost Basis: ${asset.costPerCoin.toLocaleString()}</div>*/}
-        {/*        <div>*/}
-        {/*          P/L:{" "}*/}
-        {/*          <span*/}
-        {/*            className={*/}
-        {/*              asset.profitLoss >= 0 ? "text-[#00FFA3]" : "text-red-500"*/}
-        {/*            }*/}
-        {/*          >*/}
-        {/*            {asset.profitLoss.toLocaleString(undefined, {*/}
-        {/*              minimumFractionDigits: 2,*/}
-        {/*              maximumFractionDigits: 2,*/}
-        {/*            })}*/}
-        {/*            {"  "}({asset.profitLossPct.toFixed(2)}%)*/}
-        {/*          </span>*/}
-        {/*        </div>*/}
-        {/*      </div>*/}
-        {/*    </div>*/}
-        {/*  ))}*/}
-        {/*</div>*/}
       </div>
     </GlassCard>
   );

@@ -1,5 +1,8 @@
 import { useState, useCallback } from "react";
-import { publicAddressService, PublicAddressResponse } from "@/services/public-address-service";
+import {
+  publicAddressService,
+  PublicAddressResponse,
+} from "@/services/public-address-service";
 
 export function usePublicAddress() {
   const [loading, setLoading] = useState(false);
@@ -11,7 +14,8 @@ export function usePublicAddress() {
     setError(null);
 
     try {
-      const data: PublicAddressResponse = await publicAddressService.fetchPublicAddress();
+      const data: PublicAddressResponse =
+        await publicAddressService.fetchPublicAddress();
       setPublicAddress(data.publicAddress);
       return data;
     } catch (error: any) {
@@ -24,4 +28,3 @@ export function usePublicAddress() {
 
   return { publicAddress, loading, error, fetchPublicAddress };
 }
-
