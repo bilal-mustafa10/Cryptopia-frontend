@@ -6,7 +6,20 @@ export interface Message {
   image_url?: string;
 }
 
-export interface AIResponse {
+export interface CryptoData {
+  symbol: string;
+  name: string;
+  price: number;
+  change24h: number;
+  iconPath: string;
+  iconColor: string;
+}
+
+export interface Message {
+  id: string;
   content: string;
-  role: "assistant";
+  role: "user" | "assistant";
+  timestamp: string;
+  image_url?: string;
+  cryptoData?: CryptoData; // <-- optional field for custom widget data
 }
