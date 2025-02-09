@@ -69,25 +69,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     get().addMessage(placeholderMessage);
 
     try {
-      const responseData = await sendChatMessage(content);
-
-      set((state) => ({
-        messages: state.messages.map((msg) =>
-          msg.id === assistantMessageId ? { ...msg, content: "" } : msg,
-        ),
-      }));
-
-      let streamedContent = "";
-      for await (const word of streamText(responseData.response)) {
-        streamedContent += word;
+      await sendChatMessage(content, (update) => {
+        // Update the assistant message in the store as new data comes in
         set((state) => ({
           messages: state.messages.map((msg) =>
-            msg.id === assistantMessageId
-              ? { ...msg, content: streamedContent }
-              : msg,
+            msg.id === assistantMessageId ? { ...msg, content: update } : msg,
           ),
         }));
-      }
+      });
     } catch (error) {
       console.error("Error sending message:", error);
       set((state) => ({

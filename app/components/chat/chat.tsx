@@ -52,7 +52,7 @@ export function Chat() {
       });
 
       // Create a temporary message for streaming content
-      addMessage({
+      /* addMessage({
         id: assistantMessageId,
         content: "",
         role: "assistant",
@@ -60,7 +60,7 @@ export function Chat() {
           hour: "2-digit",
           minute: "2-digit",
         }),
-      });
+      });*/
 
       await sendChatMessage(originalText, (update) => {
         // Update the temporary message with new content
