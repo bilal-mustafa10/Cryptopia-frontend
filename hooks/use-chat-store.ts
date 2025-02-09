@@ -1,6 +1,6 @@
 // src/hooks/use-chat-store.ts
 import { create } from "zustand";
-import type { Message } from "@/types"; // Ensure your Message type includes id, content, role, timestamp, etc.
+import type { Message } from "@/types";
 import { sendChatMessage } from "@/services/chat-service";
 import { streamText } from "@/utils/stream-text";
 
@@ -10,6 +10,7 @@ interface ChatStore {
   sendMessage: (content: string) => Promise<void>;
   addMessage: (message: Message) => void;
   setIsLoading: (loading: boolean) => void;
+  removeMessage: (id: string) => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -34,8 +35,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set(() => ({
       isLoading: loading,
     })),
+  removeMessage: (id: string) =>
+    set((state) => ({
+      messages: state.messages.filter((msg) => msg.id !== id),
+    })),
   sendMessage: async (content: string) => {
-    // Prevent sending if a message is already being processed
     if (get().isLoading) return;
 
     const timestamp = new Date().toLocaleTimeString([], {
@@ -49,14 +53,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       timestamp,
     };
 
-    // Add the user's message and enable the loading state using the helper methods
     get().addMessage(userMessage);
     get().setIsLoading(true);
 
-    // Create a unique ID for the assistant's placeholder message
     const assistantMessageId = Date.now().toString() + "-assistant";
-
-    // Add a placeholder message with "CrypGod is thinking..." text
     const placeholderMessage: Message = {
       id: assistantMessageId,
       content: "CrypGod is thinking...",
@@ -69,17 +69,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     get().addMessage(placeholderMessage);
 
     try {
-      // Call the API which returns a JSON with { response: string }
       const responseData = await sendChatMessage(content);
 
-      // Clear the placeholder text before starting to stream the final response
       set((state) => ({
         messages: state.messages.map((msg) =>
           msg.id === assistantMessageId ? { ...msg, content: "" } : msg,
         ),
       }));
 
-      // Stream the response word by word using the streamText generator
       let streamedContent = "";
       for await (const word of streamText(responseData.response)) {
         streamedContent += word;
@@ -93,7 +90,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      // If an error occurs, update the placeholder message with an error message
       set((state) => ({
         messages: state.messages.map((msg) =>
           msg.id === assistantMessageId
@@ -102,7 +98,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         ),
       }));
     } finally {
-      // Disable loading state after processing is complete
       get().setIsLoading(false);
     }
   },

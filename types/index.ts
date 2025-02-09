@@ -4,6 +4,8 @@ export interface Message {
   role: "user" | "assistant";
   timestamp: string;
   image_url?: string;
+  isError?: boolean;
+  originalMessage?: string;
 }
 
 export interface CryptoData {

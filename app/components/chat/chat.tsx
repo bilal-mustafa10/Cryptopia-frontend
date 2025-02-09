@@ -18,59 +18,44 @@ import { Message } from "@/types";
 export function Chat() {
   const [message, setMessage] = useState("");
   const [streamingContent, setStreamingContent] = useState("");
-  const { messages, addMessage, isLoading, setIsLoading } = useChatStore();
+  const {
+    messages,
+    addMessage,
+    isLoading,
+    setIsLoading,
+    removeMessage, // added below in the chat store
+  } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Scroll to the bottom after messages or streaming content update
+  // Scroll to the bottom when messages or streaming content changes
   useLayoutEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingContent]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!message.trim() || isLoading) return;
-
-    // Remove focus from the input
-    inputRef.current?.blur();
-
-    // Add the user message
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: message,
-      role: "user",
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-    addMessage(userMessage);
-    setMessage("");
+  // Helper to process the assistant response
+  async function processAssistantResponse(originalText: string) {
     setIsLoading(true);
-
     try {
-      // Call the API as normal
-      const responseData = await sendChatMessage(message);
-      setIsLoading(false);
-
+      const responseData = await sendChatMessage(originalText);
       // Check if the query is about Bitcoin price
-      const isBitcoinQuery = /bitcoin/i.test(message) && /price/i.test(message);
+      const isBitcoinQuery =
+        /bitcoin/i.test(originalText) && /price/i.test(originalText);
 
       if (isBitcoinQuery) {
         // For demo purposes, use dummy crypto data.
         const cryptoData = {
           symbol: "BTC",
           name: "Bitcoin",
-          price: 30000, // Example price
-          change24h: 2.45, // Example 24h change (in %)
-          iconPath: "/bitcoin-icon.svg", // Adjust the path as needed
+          price: 30000,
+          change24h: 2.45,
+          iconPath: "/bitcoin-icon.svg",
           iconColor: "text-yellow-500",
         };
 
-        // Instead of streaming text, add a message with the cryptoData field.
         addMessage({
-          id: (Date.now() + 1).toString(),
-          content: "", // content not used when cryptoData is present
+          id: Date.now().toString(),
+          content: "", // not used when cryptoData is present
           role: "assistant",
           timestamp: new Date().toLocaleTimeString([], {
             hour: "2-digit",
@@ -79,16 +64,15 @@ export function Chat() {
           cryptoData,
         });
       } else {
-        // Normal behavior: stream the response text word by word.
+        // Stream the response text word by word.
         let fullContent = "";
         for await (const chunk of streamText(responseData.response)) {
           fullContent += chunk;
           setStreamingContent(fullContent);
         }
-        // Clear the streaming text and add the final assistant message
         setStreamingContent("");
         addMessage({
-          id: (Date.now() + 1).toString(),
+          id: Date.now().toString(),
           content: responseData.response,
           role: "assistant",
           timestamp: new Date().toLocaleTimeString([], {
@@ -99,62 +83,147 @@ export function Chat() {
       }
     } catch (error) {
       console.error("Error sending message:", error);
+      // Add an error message that includes the original text so we can retry
+      const errorMsg: Message = {
+        id: Date.now().toString(),
+        content: "Error: Failed to get response from the agent.",
+        role: "assistant",
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        // Optional fields used to flag this as an error message:
+        isError: true,
+        originalMessage: originalText,
+      };
+      addMessage(errorMsg);
+    } finally {
       setIsLoading(false);
     }
+  }
+
+  // Called when the user submits the message form.
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim() || isLoading) return;
+
+    // Remove focus from the input.
+    inputRef.current?.blur();
+
+    const originalText = message;
+    // Add the user message.
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: originalText,
+      role: "user",
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+    addMessage(userMessage);
+    setMessage("");
+
+    // Process the assistant response.
+    await processAssistantResponse(originalText);
   };
 
-  const renderMessage = (msg: Message) => (
-    <div key={msg.id} className="flex items-start gap-3">
-      <Avatar className="h-8 w-8 shrink-0">
-        <AvatarImage
-          src={msg.role === "user" ? "/user-avatar.svg" : "/avatar.svg"}
-        />
-        <AvatarFallback>{msg.role === "user" ? "U" : "C"}</AvatarFallback>
-      </Avatar>
-      <div className="grid gap-1">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-foreground">
-            {msg.role === "user" ? "You" : "CrypGod"}
-          </span>
-          <span className="text-xs text-muted-foreground">{msg.timestamp}</span>
+  // Called when the user clicks the retry button on an error message.
+  const handleRetry = async (errorMsg: Message) => {
+    // Remove the error message from the chat.
+    removeMessage(errorMsg.id);
+    // Re-use the original text from the error message to try again.
+    await processAssistantResponse(errorMsg.originalMessage!);
+  };
+
+  // Render a chat message. If the message is flagged as an error, render a Retry button.
+  const renderMessage = (msg: Message) => {
+    // If this is an assistant error message, render with a Retry button.
+    if (msg.role === "assistant" && msg.isError) {
+      return (
+        <div key={msg.id} className="flex items-start gap-3">
+          <Avatar className="h-8 w-8 shrink-0">
+            <AvatarImage src="/avatar.svg" />
+            <AvatarFallback>C</AvatarFallback>
+          </Avatar>
+          <div className="grid gap-1">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-foreground">CrypGod</span>
+              <span className="text-xs text-muted-foreground">
+                {msg.timestamp}
+              </span>
+            </div>
+            <div className="text-sm text-red-500">
+              {msg.content}
+              <Button
+                onClick={() => handleRetry(msg)}
+                size="sm"
+                variant="outline"
+                className="ml-2"
+              >
+                Retry
+              </Button>
+            </div>
+          </div>
         </div>
-        {msg.role === "assistant" && msg.cryptoData ? (
-          // Render the CryptoWidget if cryptoData exists
-          <div className="w-64 my-4">
-            <CryptoWidget
-              name={"Bitcoin"}
-              symbol={"BTC"}
-              price={30000}
-              change24h={2.45}
-              iconPath={"crypto/btc.svg"}
-              iconColor={"text-yellow-500"}
-            />
+      );
+    }
+
+    return (
+      <div key={msg.id} className="flex items-start gap-3">
+        <Avatar className="h-8 w-8 shrink-0">
+          <AvatarImage
+            src={msg.role === "user" ? "/user-avatar.svg" : "/avatar.svg"}
+          />
+          <AvatarFallback>{msg.role === "user" ? "U" : "C"}</AvatarFallback>
+        </Avatar>
+        <div className="grid gap-1">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-foreground">
+              {msg.role === "user" ? "You" : "CrypGod"}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {msg.timestamp}
+            </span>
           </div>
-        ) : (
-          <div
-            className={cn(
-              "text-foreground",
-              msg.role === "assistant" &&
-                "prose prose-zinc dark:prose-invert max-w-none",
-            )}
-          >
-            {msg.role === "assistant" ? (
-              <MarkdownRenderer>{msg.content}</MarkdownRenderer>
-            ) : (
-              msg.content
-            )}
-            {msg.image_url && (
-              <img
-                src={msg.image_url}
-                alt="Generated by DALLE-3"
-                className="mt-2 rounded-lg shadow-lg w-[400px] object-contain p-2"
+          {msg.role === "assistant" && msg.cryptoData ? (
+            // Render the CryptoWidget if cryptoData exists.
+            <div className="w-64 my-4">
+              <CryptoWidget
+                name={"Bitcoin"}
+                symbol={"BTC"}
+                price={30000}
+                change24h={2.45}
+                iconPath={"crypto/btc.svg"}
+                iconColor={"text-yellow-500"}
               />
-            )}
-          </div>
-        )}
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "text-foreground",
+                msg.role === "assistant" &&
+                  "prose prose-zinc dark:prose-invert max-w-none",
+              )}
+            >
+              {msg.role === "assistant" ? (
+                <MarkdownRenderer>{msg.content}</MarkdownRenderer>
+              ) : (
+                msg.content
+              )}
+              {msg.image_url && (
+                <img
+                  src={msg.image_url}
+                  alt="Generated by DALLE-3"
+                  className="mt-2 rounded-lg shadow-lg w-[400px] object-contain p-2"
+                />
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <GlassCard>

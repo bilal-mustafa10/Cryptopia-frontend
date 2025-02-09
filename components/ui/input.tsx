@@ -13,7 +13,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           "bg-white dark:bg-white/5",
           "border border-zinc-200 dark:border-zinc-800",
           "text-sm text-zinc-900 dark:text-zinc-100",
-          "placeholder:text-zinc-400 dark:placeholder:text-zinc-600",
+          "placeholder:text-zinc-200 dark:placeholder:text-zinc-400",
           "transition-all duration-200",
           "focus:ring-2 focus:ring-indigo-400 focus:border-indigo-600",
         )}
