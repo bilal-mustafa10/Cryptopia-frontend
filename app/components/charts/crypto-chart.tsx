@@ -76,7 +76,7 @@ export function CryptoChart({
           color: color,
         },
       }}
-      className="w-full h-[80px] sm:h-[100px] md:h-[120px] lg:h-[160px] xl:h-[200px] 2xl:h-[400px]"
+      className="w-full h-[80px] sm:h-[100px] md:h-[120px] lg:h-[160px] xl:h-[200px] 2xl:h-[300px]"
     >
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
