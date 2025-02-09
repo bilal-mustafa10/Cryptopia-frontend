@@ -102,7 +102,7 @@ export default function CryptoWallet() {
           </div>
         </div>
         <div className="inline-flex h-8 text-xs animate-shimmer items-center justify-center rounded-full border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 font-medium text-slate-400 transition-colors">
-          Connected: MetaMask
+          Connected to: Base-Sepolia
         </div>
       </div>
 
