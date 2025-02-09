@@ -10,10 +10,15 @@ const nextConfig = {
     ],
   },
   async rewrites() {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+      throw new Error("The API_URL environment variable is not defined.");
+    }
+
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:8000/:path*",
+        destination: `${apiUrl}/:path*`,
       },
     ];
   },
