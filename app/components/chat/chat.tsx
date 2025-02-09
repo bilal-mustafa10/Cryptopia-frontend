@@ -36,10 +36,13 @@ export function Chat() {
   // Helper to process the assistant response
   async function processAssistantResponse(originalText: string) {
     setIsLoading(true);
+    const userMessageId = Date.now().toString();
+    const assistantMessageId = (Date.now() + 1).toString();
+
     try {
       // Add user message immediately
       addMessage({
-        id: Date.now().toString(),
+        id: userMessageId,
         content: originalText,
         role: "user",
         timestamp: new Date().toLocaleTimeString([], {
@@ -49,9 +52,8 @@ export function Chat() {
       });
 
       // Create a temporary message for streaming content
-      const tempMessageId = Date.now().toString();
       addMessage({
-        id: tempMessageId,
+        id: assistantMessageId,
         content: "",
         role: "assistant",
         timestamp: new Date().toLocaleTimeString([], {
@@ -62,9 +64,9 @@ export function Chat() {
 
       await sendChatMessage(originalText, (update) => {
         // Update the temporary message with new content
-        removeMessage(tempMessageId);
+        removeMessage(assistantMessageId);
         addMessage({
-          id: tempMessageId,
+          id: assistantMessageId,
           content: update,
           role: "assistant",
           timestamp: new Date().toLocaleTimeString([], {
@@ -76,7 +78,7 @@ export function Chat() {
     } catch (error) {
       console.error("Error sending message:", error);
       addMessage({
-        id: Date.now().toString(),
+        id: assistantMessageId,
         content: "Error: Failed to get response from the agent.",
         role: "assistant",
         timestamp: new Date().toLocaleTimeString([], {
