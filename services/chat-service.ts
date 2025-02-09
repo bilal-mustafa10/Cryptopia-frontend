@@ -1,34 +1,75 @@
 export interface ChatResponse {
-  response: string;
+  type: 'message' | 'tool' | 'error' | 'complete';
+  content: string;
 }
 
-export async function sendChatMessage(message: string): Promise<ChatResponse> {
-  // Maximum allowed timeout for setTimeout in many browsers (approx 24.8 days)
-  const maxTimeout = 2147483647;
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), maxTimeout);
-
+export async function sendChatMessage(
+  message: string,
+  onUpdate: (update: string) => void
+): Promise<void> {
   try {
-    const res = await fetch("/api/chat", {
+    const response = await fetch("/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Accept": "text/event-stream",
       },
-      signal: controller.signal,
-      body: JSON.stringify({ message, stream: false }),
+      body: JSON.stringify({ message, stream: true }),
     });
 
-    if (!res.ok) {
-      throw new Error("Failed to fetch chat response.");
+    if (!response.ok) {
+      throw new Error(`Failed to fetch chat response: ${response.statusText}`);
     }
 
-    return await res.json();
-  } catch (error: any) {
-    if (error.name === "AbortError") {
-      throw new Error("Request timed out after maximum allowed time.");
+    if (!response.body) {
+      throw new Error("No response body available");
     }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      
+      // Process all complete lines
+      for (let i = 0; i < lines.length - 1; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        try {
+          const parsed = JSON.parse(line) as ChatResponse;
+          if (parsed.type === 'message' || parsed.type === 'tool') {
+            onUpdate(parsed.content);
+          } else if (parsed.type === 'error') {
+            throw new Error(parsed.content);
+          }
+        } catch (e) {
+          console.error("Error parsing SSE:", e, "Line:", line);
+        }
+      }
+      
+      // Keep the last incomplete line in the buffer
+      buffer = lines[lines.length - 1];
+    }
+
+    // Process any remaining data
+    if (buffer.trim()) {
+      try {
+        const parsed = JSON.parse(buffer) as ChatResponse;
+        if (parsed.type === 'message' || parsed.type === 'tool') {
+          onUpdate(parsed.content);
+        }
+      } catch (e) {
+        console.error("Error parsing final SSE chunk:", e);
+      }
+    }
+  } catch (error: any) {
+    console.error("Chat service error:", error);
     throw error;
-  } finally {
-    clearTimeout(timeoutId);
   }
 }

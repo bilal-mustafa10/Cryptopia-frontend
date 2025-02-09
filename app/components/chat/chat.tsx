@@ -37,54 +37,45 @@ export function Chat() {
   async function processAssistantResponse(originalText: string) {
     setIsLoading(true);
     try {
-      const responseData = await sendChatMessage(originalText);
-      // Check if the query is about Bitcoin price
-      const isBitcoinQuery =
-        /bitcoin/i.test(originalText) && /price/i.test(originalText);
+      // Add user message immediately
+      addMessage({
+        id: Date.now().toString(),
+        content: originalText,
+        role: "user",
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      });
 
-      if (isBitcoinQuery) {
-        // For demo purposes, use dummy crypto data.
-        const cryptoData = {
-          symbol: "BTC",
-          name: "Bitcoin",
-          price: 30000,
-          change24h: 2.45,
-          iconPath: "/bitcoin-icon.svg",
-          iconColor: "text-yellow-500",
-        };
+      // Create a temporary message for streaming content
+      const tempMessageId = Date.now().toString();
+      addMessage({
+        id: tempMessageId,
+        content: "",
+        role: "assistant",
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      });
 
+      await sendChatMessage(originalText, (update) => {
+        // Update the temporary message with new content
+        removeMessage(tempMessageId);
         addMessage({
-          id: Date.now().toString(),
-          content: "", // not used when cryptoData is present
-          role: "assistant",
-          timestamp: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          cryptoData,
-        });
-      } else {
-        // Stream the response text word by word.
-        let fullContent = "";
-        for await (const chunk of streamText(responseData.response)) {
-          fullContent += chunk;
-          setStreamingContent(fullContent);
-        }
-        setStreamingContent("");
-        addMessage({
-          id: Date.now().toString(),
-          content: responseData.response,
+          id: tempMessageId,
+          content: update,
           role: "assistant",
           timestamp: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           }),
         });
-      }
+      });
     } catch (error) {
       console.error("Error sending message:", error);
-      // Add an error message that includes the original text so we can retry
-      const errorMsg: Message = {
+      addMessage({
         id: Date.now().toString(),
         content: "Error: Failed to get response from the agent.",
         role: "assistant",
@@ -92,11 +83,9 @@ export function Chat() {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        // Optional fields used to flag this as an error message:
         isError: true,
         originalMessage: originalText,
-      };
-      addMessage(errorMsg);
+      });
     } finally {
       setIsLoading(false);
     }
@@ -111,21 +100,9 @@ export function Chat() {
     inputRef.current?.blur();
 
     const originalText = message;
-    // Add the user message.
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: originalText,
-      role: "user",
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-    addMessage(userMessage);
-    setMessage("");
-
     // Process the assistant response.
     await processAssistantResponse(originalText);
+    setMessage("");
   };
 
   // Called when the user clicks the retry button on an error message.
